@@ -4,7 +4,33 @@ import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 
-class Order {
+
+class Match{
+    private String symbol;
+    private Order buy;
+    private Order sell;
+    
+    public Match(String symbol, Order buy, Order sell){
+        this.symbol = symbol;
+        this.buy = buy;
+        this.sell = sell;     
+    }
+    
+    public String generate(){
+        return "";
+    }
+    
+    
+    
+
+}
+
+class Order implements Comparable<Order>{
+    
+    @Override
+    public int compareTo(Order o){
+        return this.symbol.compareTo(o.getSymbol());
+    }
 
     public int getOrderID() {
         return orderID;
@@ -50,6 +76,7 @@ class Order {
         B, S
     }
 
+    static int lastTimestamp = 0;
     public static List<String> responses = new ArrayList<>();
     public static List<Order> orders = new ArrayList<>();
     private final int orderID;
@@ -83,9 +110,38 @@ class Order {
        return -1;
        
    }
+   
+    
+    private static void MatchMany(String symbol){
+        List<Order> toBuyMatch = new ArrayList();
+        List<Order> toSellMatch = new ArrayList();
+            for (Order order : orders){
+                if(symbol.equals(null) || order.getSymbol().equals(symbol)){
+                    if(order.side == Side.B){
+                    toBuyMatch.add(order);
+                    orders.remove(order);
+                    }else{
+                    toSellMatch.add(order);
+                    orders.remove(order); 
+                    }
+                }
+            }
+        
+        for(Order buy : toBuyMatch){
+            for(Order sell : toSellMatch){
+                
+            }
+        }
+        
+        
+        
+            
+        
+                
+    }
 
     public static void Parse(String[] data) {
-        if(!data[0].equals("M")){
+        if(data[0].equals("N") || data[0].equals("A")){
                 try{
                     int orderID = Integer.parseInt(data[1]);
                     String removedZeroes = data[2].replaceFirst("^0+(?!$)", "");
@@ -123,11 +179,9 @@ class Order {
                                 }
                     
                     int quantity = Integer.parseInt(data[7]);
-                    if((orders.isEmpty() || timeStamp >= orders.get(orders.size() - 1).getTimestamp()) && 
-                       symbol.matches("[a-zA-Z]+") && orderType != null && !(orderType == OrderType.M && price > 0)
-                       && price >= 0 && side != null && quantity >= 1 && quantity <= Math.pow(2, 63) - 1 && orderID >= 1 &&                             orderID <= Math.pow(2, 63) - 1){
-                        
-                    
+                    if(timeStamp >= Order.lastTimestamp && symbol.matches("[a-zA-Z]+") && orderType != null && !(orderType == 
+                        OrderType.M && price >= 0) && price >= 0 && side != null && quantity >= 1 &&
+                       quantity <= Math.pow(2, 63) - 1 && orderID >= 1 && orderID <= Math.pow(2, 63) - 1 && quantity >= 0){
                     if(data[0].equals("N")){
                         //Command N
                         if(findOrder(orderID) == -1){
@@ -154,9 +208,7 @@ class Order {
                             
                         }
                         
-                    }
-                                        
-                                        
+                    }                  
                                     } else {
                         if(data[0].equals("N"))
                         responses.add(data[1] + " - Reject - 303 - Invalid order details");
@@ -170,7 +222,41 @@ class Order {
                         responses.add(data[1] + " - AmendReject - 101 - Invalid amendment details");
                 }
         }else{
-            //Command M
+            if(data[0].equals("X")){
+                //Command X
+                try{
+                    int orderID = Integer.parseInt(data[1]);
+                    String removedZeroes = data[2].replaceFirst("^0+(?!$)", "");
+                    int timeStamp = Integer.parseInt(removedZeroes);
+                    int toCancel = findOrder(orderID);
+                    if(toCancel >= 0 && timeStamp >= Order.lastTimestamp){
+                        responses.add(orderID + " - CancelAccept");
+                        orders.remove(orders.get(toCancel));
+                    }else{
+                        responses.add(orderID + " - CancelReject - 404 - Order does not exist");
+                    }
+                    
+                }catch(Exception e){
+                    responses.add(data[1] + " - CancelReject - 404 - Order does not exist");
+                }
+            }else if(data[0].equals("M")){
+                //Command M
+                try{
+                String removedZeroes = data[1].replaceFirst("^0+(?!$)", "");
+                int timeStamp = Integer.parseInt(removedZeroes);
+                if(timeStamp >= Order.lastTimestamp){
+                String symbol = null;
+                if(data.length > 2)
+                symbol = data[2];
+                }
+                
+                
+                
+                    
+                }catch(Exception e){}            
+            }
+            
+            
         }
 
 
