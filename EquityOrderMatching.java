@@ -236,7 +236,7 @@ class Order implements Comparable<Order>{
                 matched.add(buy);
         }
         
-        for(Order sell : toBuyMatch){
+        for(Order sell : toSellMatch){
             if(sell.getOrderType() == OrderType.I)
                 matched.add(sell);
         }
