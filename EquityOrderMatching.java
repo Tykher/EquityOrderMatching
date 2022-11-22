@@ -57,14 +57,16 @@ class Order implements Comparable<Order>{
     @Override
     public int compareTo(Order o){
         if(this.symbol.equals(o.getSymbol())){
-            float x = this.price - o.getPrice();
+            float thisValue = this.price * this.getQuantity();
+            float oValue = o.getPrice() * o.getQuantity();
+            float x = thisValue = oValue;
             if(x > 0)
                 return 1;
             else if (x < 0)
                 return -1;
             else if (x == 0)
             {
-                return this.quantity - o.getQuantity();
+                return 0;
             }
             
         }
