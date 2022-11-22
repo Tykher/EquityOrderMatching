@@ -16,8 +16,17 @@ class Match{
         this.sell = sell;     
     }
     
-    public String generate(){
-        return "";
+    public String generateMatch(){
+        StringBuilder gen = new StringBuilder();
+        gen.append(symbol);
+        gen.append("|");
+        if(buy != null)
+        gen.append(buy.getOrderID()+ "," + buy.getOrderType().name() + "," + sell.getQuantity() + "," + sell.getPrice());
+        gen.append("|");
+        if(sell != null)
+        gen.append(sell.getPrice() + "," + sell.getQuantity() + "," + sell.getOrderType().name() + "," + sell.getOrderID());
+        return gen.toString();
+        
     }
     
     
@@ -112,32 +121,68 @@ class Order implements Comparable<Order>{
    }
    
     
-    private static void MatchMany(String symbol){
+    private static void Match(String symbol, int timestamp){
         List<Order> toBuyMatch = new ArrayList();
         List<Order> toSellMatch = new ArrayList();
+        System.out.println(orders.size());
             for (Order order : orders){
-                if(symbol.equals(null) || order.getSymbol().equals(symbol)){
+                if(order.getTimestamp() <= timestamp && (symbol == null || symbol.equals(order.getSymbol()))){
                     if(order.side == Side.B){
                     toBuyMatch.add(order);
-                    orders.remove(order);
                     }else{
                     toSellMatch.add(order);
-                    orders.remove(order); 
                     }
                 }
             }
+        orders.removeAll(toBuyMatch);
+        orders.removeAll(toSellMatch);
+        
+        List<Order> matched = new ArrayList();
         
         for(Order buy : toBuyMatch){
             for(Order sell : toSellMatch){
+                if(buy.getSymbol().equals(sell.getSymbol()) && buy.getQuantity() >= sell.getQuantity() && 
+                   buy.getOrderType() == sell.getOrderType()){
+                    if((buy.getOrderType() == OrderType.L || buy.getOrderType() == OrderType.I) && 
+                       buy.getPrice() >= sell.getPrice()){
+                    Match match = new Match(buy.getSymbol(), buy, sell);
+                    matched.add(buy);
+                    matched.add(sell);
+                    responses.add(match.generateMatch());
+                    toSellMatch.remove(sell);
+                    break;
+                    }else if(buy.getOrderType() == OrderType.M){
+                    Match match = new Match(buy.getSymbol(), buy, sell);
+                    matched.add(buy);
+                    matched.add(sell);
+                    responses.add(match.generateMatch());
+                    toSellMatch.remove(sell);
+                    break;
+                    }
+                }
+                
                 
             }
         }
         
+        for(Order buy : toBuyMatch){
+            if(buy.getOrderType() == OrderType.I)
+                matched.add(buy);
+        }
         
-        
-            
-        
+        for(Order sell : toBuyMatch){
+            if(sell.getOrderType() == OrderType.I)
+                matched.add(sell);
+        }
                 
+        toBuyMatch.remove(matched);
+        toSellMatch.remove(matched);
+        orders.addAll(toBuyMatch);
+        orders.addAll(toSellMatch);
+        
+        
+        
+        
     }
 
     public static void Parse(String[] data) {
@@ -195,10 +240,11 @@ class Order implements Comparable<Order>{
                             Order toAmmend = orders.get(orderIndex);
                             if(toAmmend.getSymbol().equals(symbol) &&
                                toAmmend.getSide() == side && toAmmend.getOrderType() == orderType){
-                                
                                 toAmmend.setPrice(price);
                                 toAmmend.setQuantity(quantity);
                                 responses.add(data[1] + " - AmendAccept");
+                                
+                                
                                 
                             }else{
                             responses.add(data[1] + " - AmendReject - 101 - Invalid amendment details");
@@ -243,16 +289,13 @@ class Order implements Comparable<Order>{
                 //Command M
                 try{
                 String removedZeroes = data[1].replaceFirst("^0+(?!$)", "");
-                int timeStamp = Integer.parseInt(removedZeroes);
-                if(timeStamp >= Order.lastTimestamp){
+                int timeStamp = Integer.parseInt(removedZeroes);                
                 String symbol = null;
                 if(data.length > 2)
                 symbol = data[2];
-                }
-                
-                
-                
                     
+                Match(symbol, timeStamp);
+                   
                 }catch(Exception e){}            
             }
             
