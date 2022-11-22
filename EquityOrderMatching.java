@@ -52,8 +52,25 @@ class Match implements Comparable<Match>{
 
 }
 
-class Order{
+class Order implements Comparable<Order>{
     
+    @Override
+    public int compareTo(Order o){
+        if(this.symbol.equals(o.getSymbol())){
+            float x = this.price - o.getPrice();
+            if(x > 0)
+                return 1;
+            else if (x < 0)
+                return -1;
+            else if (x == 0)
+            {
+                return this.quantity - o.getQuantity();
+            }
+            
+        }
+        return this.symbol.compareTo(o.getSymbol());
+        
+    }
   
     public int getOrderID() {
         return orderID;
@@ -160,16 +177,20 @@ class Order{
         orders.removeAll(toBuyMatch);
         orders.removeAll(toSellMatch);
         
+        Collections.sort(toBuyMatch, Collections.reverseOrder());
+        Collections.sort(toSellMatch, Collections.reverseOrder());
+        
         List<Order> matched = new ArrayList();
         
         List<Match> toReturn = new ArrayList();
         
         for(Order buy : toBuyMatch){
+            List<Order> resolved = new ArrayList();
             for(Order sell : toSellMatch){
-                if(buy.getSymbol().equals(sell.getSymbol()) && buy.getQuantity() >= sell.getQuantity() && 
-                   buy.getOrderType() == sell.getOrderType()){
-                    if((buy.getOrderType() == OrderType.L || buy.getOrderType() == OrderType.I) && 
-                       buy.getPrice() >= sell.getPrice()){
+                if(buy.getSymbol().equals(sell.getSymbol())){
+                    if(((buy.getOrderType() == OrderType.L || buy.getOrderType() == OrderType.I) && 
+                       buy.getPrice() >= sell.getPrice()) || buy.orderType == OrderType.M) {
+                        
                         Match match;
                         if(buy.getQuantity() > sell.getQuantity()){
                             Order order = new Order(buy);
@@ -177,33 +198,36 @@ class Order{
                             buy.setQuantity(buy.getQuantity()-sell.getQuantity());
                             order.setPrice(sell.getPrice());
                             match = new Match(buy.getSymbol(), order, sell);
-                        }else if(buy.getPrice() != sell.getPrice()){
+                            matched.add(sell);
+                            toReturn.add(match);
+                            resolved.add(sell);
+                        }else if(buy.getQuantity() < sell.getQuantity()){
+                            Order order = new Order(sell);
+                            order.setQuantity(buy.getQuantity());
+                            sell.setQuantity(sell.getQuantity() - buy.getQuantity());
+                            order.setPrice(buy.getPrice());
+                            match = new Match(buy.getSymbol(), buy, order);
+                            matched.add(buy);
+                            toReturn.add(match);
+                            break;
+                        }else{
+                            if(buy.getPrice() != sell.getPrice())
                             buy.setPrice(sell.getPrice());
+                            
                             matched.add(buy);
+                            matched.add(sell);
                             match = new Match(buy.getSymbol(), buy, sell);
-                        }else
-                        {
-                            matched.add(buy);
-                            match = new Match(buy.getSymbol(), buy, sell);
-                        }
-                    
-                    matched.add(sell);
-                    toReturn.add(match);
-                    toSellMatch.remove(sell);
-                    break;
-                    }else if(buy.getOrderType() == OrderType.M){
-                    Match match = new Match(buy.getSymbol(), buy, sell);
-                    matched.add(buy);
-                    matched.add(sell);
-                    toReturn.add(match);
-                    toSellMatch.remove(sell);
-                    break;
-                    }
+                            toReturn.add(match);
+                            resolved.add(sell);
+                            break;
+                        }    
                 }
                 
                 
             }
         }
+        toSellMatch.removeAll(resolved);
+    }
         
         for(Order buy : toBuyMatch){
             if(buy.getOrderType() == OrderType.I)
