@@ -191,8 +191,7 @@ class Order implements Comparable<Order>{
             for(Order sell : toSellMatch){
                 if(buy.getSymbol().equals(sell.getSymbol())){
                     if(((buy.getOrderType() == OrderType.L || buy.getOrderType() == OrderType.I) && 
-                       buy.getPrice() >= sell.getPrice()) || buy.orderType == OrderType.M) {
-                        
+                       buy.getPrice() >= sell.getPrice()) || buy.orderType == OrderType.M) {                      
                         Match match;
                         if(buy.getQuantity() > sell.getQuantity()){
                             Order order = new Order(buy);
@@ -207,7 +206,7 @@ class Order implements Comparable<Order>{
                             Order order = new Order(sell);
                             order.setQuantity(buy.getQuantity());
                             sell.setQuantity(sell.getQuantity() - buy.getQuantity());
-                            order.setPrice(buy.getPrice());
+                            buy.setPrice(sell.getPrice());
                             match = new Match(buy.getSymbol(), buy, order);
                             matched.add(buy);
                             toReturn.add(match);
