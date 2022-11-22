@@ -29,22 +29,12 @@ class Match implements Comparable<Match>{
     
     public Match(String symbol, Order buy, Order sell){
         this.symbol = symbol;
-        this.buy = buy;
+        this.buy = buy; 
         this.sell = sell;     
     }
     
-    public String generateMatch(){
-        StringBuilder gen = new StringBuilder();
-        gen.append(symbol);
-        gen.append("|");
-        gen.append(buy.getOrderID()+ "," + buy.getOrderType().name() + "," + sell.getQuantity() + "," + sell.getPrice());
-        gen.append("|");
-        gen.append(sell.getPrice() + "," + sell.getQuantity() + "," + sell.getOrderType().name() + "," + sell.getOrderID());
-        return gen.toString();
-        
-    }
     
-     public String generateQuery(){
+     public String generate(){
         StringBuilder gen = new StringBuilder();
         gen.append(symbol);
         gen.append("|");
@@ -131,6 +121,16 @@ class Order{
 
     }
     
+    public Order(Order o) {
+        this.orderID = o.getOrderID();
+        this.timestamp = o.getTimestamp();
+        this.symbol = o.getSymbol();
+        this.orderType = o.getOrderType();
+        this.side = o.getSide();
+        this.price = o.getPrice();
+        this.quantity = o.getQuantity();
+    }
+    
     //returns index of seeked order
     //returns -1 if doesn't exist
    private static int findOrder(int orderID){
@@ -170,8 +170,23 @@ class Order{
                    buy.getOrderType() == sell.getOrderType()){
                     if((buy.getOrderType() == OrderType.L || buy.getOrderType() == OrderType.I) && 
                        buy.getPrice() >= sell.getPrice()){
-                    Match match = new Match(buy.getSymbol(), buy, sell);
-                    matched.add(buy);
+                        Match match;
+                        if(buy.getQuantity() > sell.getQuantity()){
+                            Order order = new Order(buy);
+                            order.setQuantity(sell.getQuantity());
+                            buy.setQuantity(buy.getQuantity()-sell.getQuantity());
+                            order.setPrice(sell.getPrice());
+                            match = new Match(buy.getSymbol(), order, sell);
+                        }else if(buy.getPrice() != sell.getPrice()){
+                            buy.setPrice(sell.getPrice());
+                            matched.add(buy);
+                            match = new Match(buy.getSymbol(), buy, sell);
+                        }else
+                        {
+                            matched.add(buy);
+                            match = new Match(buy.getSymbol(), buy, sell);
+                        }
+                    
                     matched.add(sell);
                     toReturn.add(match);
                     toSellMatch.remove(sell);
@@ -209,7 +224,7 @@ class Order{
         
         
         for(Match match : toReturn){
-            responses.add(match.generateMatch());
+            responses.add(match.generate());
         }
         
         
@@ -250,7 +265,7 @@ class Order{
         
         for(int i = 0; i < 5; i++){
             if(i < matches.size()){
-                responses.add(matches.get(i).generateQuery());
+                responses.add(matches.get(i).generate());
             }
         }
         
