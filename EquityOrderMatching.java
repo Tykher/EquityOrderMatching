@@ -5,10 +5,27 @@ import java.util.*;
 import java.util.regex.*;
 
 
-class Match{
+class Match implements Comparable<Match>{
     private String symbol;
     private Order buy;
     private Order sell;
+    
+     @Override
+    public int compareTo(Match o){
+        return this.symbol.compareTo(o.getSymbol());
+    }
+    
+    public String getSymbol(){
+        return this.symbol;
+    }
+    
+    public void setBuy(Order buy){
+        this.buy = buy;
+    }
+    
+    public void setSell(Order sell){
+        this.sell = sell;
+    }
     
     public Match(String symbol, Order buy, Order sell){
         this.symbol = symbol;
@@ -20,8 +37,19 @@ class Match{
         StringBuilder gen = new StringBuilder();
         gen.append(symbol);
         gen.append("|");
-        if(buy != null)
         gen.append(buy.getOrderID()+ "," + buy.getOrderType().name() + "," + sell.getQuantity() + "," + sell.getPrice());
+        gen.append("|");
+        gen.append(sell.getPrice() + "," + sell.getQuantity() + "," + sell.getOrderType().name() + "," + sell.getOrderID());
+        return gen.toString();
+        
+    }
+    
+     public String generateQuery(){
+        StringBuilder gen = new StringBuilder();
+        gen.append(symbol);
+        gen.append("|");
+        if(buy != null)
+        gen.append(buy.getOrderID()+ "," + buy.getOrderType().name() + "," + buy.getQuantity() + "," + buy.getPrice());
         gen.append("|");
         if(sell != null)
         gen.append(sell.getPrice() + "," + sell.getQuantity() + "," + sell.getOrderType().name() + "," + sell.getOrderID());
@@ -34,13 +62,9 @@ class Match{
 
 }
 
-class Order implements Comparable<Order>{
+class Order{
     
-    @Override
-    public int compareTo(Order o){
-        return this.symbol.compareTo(o.getSymbol());
-    }
-
+  
     public int getOrderID() {
         return orderID;
     }
@@ -124,7 +148,6 @@ class Order implements Comparable<Order>{
     private static void Match(String symbol, int timestamp){
         List<Order> toBuyMatch = new ArrayList();
         List<Order> toSellMatch = new ArrayList();
-        System.out.println(orders.size());
             for (Order order : orders){
                 if(order.getTimestamp() <= timestamp && (symbol == null || symbol.equals(order.getSymbol()))){
                     if(order.side == Side.B){
@@ -139,6 +162,8 @@ class Order implements Comparable<Order>{
         
         List<Order> matched = new ArrayList();
         
+        List<Match> toReturn = new ArrayList();
+        
         for(Order buy : toBuyMatch){
             for(Order sell : toSellMatch){
                 if(buy.getSymbol().equals(sell.getSymbol()) && buy.getQuantity() >= sell.getQuantity() && 
@@ -148,14 +173,14 @@ class Order implements Comparable<Order>{
                     Match match = new Match(buy.getSymbol(), buy, sell);
                     matched.add(buy);
                     matched.add(sell);
-                    responses.add(match.generateMatch());
+                    toReturn.add(match);
                     toSellMatch.remove(sell);
                     break;
                     }else if(buy.getOrderType() == OrderType.M){
                     Match match = new Match(buy.getSymbol(), buy, sell);
                     matched.add(buy);
                     matched.add(sell);
-                    responses.add(match.generateMatch());
+                    toReturn.add(match);
                     toSellMatch.remove(sell);
                     break;
                     }
@@ -174,11 +199,61 @@ class Order implements Comparable<Order>{
             if(sell.getOrderType() == OrderType.I)
                 matched.add(sell);
         }
+        
                 
-        toBuyMatch.remove(matched);
-        toSellMatch.remove(matched);
+        toBuyMatch.removeAll(matched);
+        toSellMatch.removeAll(matched);
         orders.addAll(toBuyMatch);
         orders.addAll(toSellMatch);
+        Collections.sort(toReturn);
+        
+        
+        for(Match match : toReturn){
+            responses.add(match.generateMatch());
+        }
+        
+        
+        
+        
+    }
+    
+    public static void Query(int timestamp, String symbol){
+        List<Order> toBuyMatch = new ArrayList();
+        List<Order> toSellMatch = new ArrayList();
+        for (Order order : orders){
+                if((timestamp < 0 || order.getTimestamp() <= timestamp) && 
+                   (symbol == null || symbol.equals(order.getSymbol()))){
+                    if(order.side == Side.B){
+                    toBuyMatch.add(order);
+                    }else{
+                    toSellMatch.add(order);
+                    }
+                }
+        }
+        List<Match> matches = new ArrayList();
+         for(Order buy : toBuyMatch){
+             Match match = new Match(buy.symbol, buy, null);
+            for(Order sell : toSellMatch){
+                if(buy.getSymbol().equals(sell.getSymbol()) && buy.getOrderType() == sell.getOrderType()){
+                    match.setSell(sell);
+                    toSellMatch.remove(sell);
+                    break;
+                }
+            }
+             matches.add(match);             
+         }
+        for(Order sell : toSellMatch){
+            matches.add(new Match(sell.symbol, null, sell));           
+        }
+        
+        Collections.sort(matches);
+        
+        for(int i = 0; i < 5; i++){
+            if(i < matches.size()){
+                responses.add(matches.get(i).generateQuery());
+            }
+        }
+        
         
         
         
@@ -297,6 +372,32 @@ class Order implements Comparable<Order>{
                 Match(symbol, timeStamp);
                    
                 }catch(Exception e){}            
+            }else if(data[0].equals("Q")){
+                String symbol = null;
+                int timeStamp = -1;
+                if(data.length> 1){
+                    if(data[1].matches("[a-zA-Z]+"))
+                        symbol = data[1];
+                    else if(data[1].matches("[0-9]+")){
+                        String removedZeroes = data[1].replaceFirst("^0+(?!$)", "");
+                        timeStamp = Integer.parseInt(removedZeroes);
+                    }
+                    
+                    if(data.length>2){
+                         if(data[2].matches("[a-zA-Z]+") && symbol.equals(null))
+                        symbol = data[2];
+                        else if(data[2].matches("[0-9]+") && timeStamp == -1){
+                           String removedZeroes = data[2].replaceFirst("^0+(?!$)", "");
+                            timeStamp = Integer.parseInt(removedZeroes); 
+                        }
+                    } 
+                    
+                    
+                
+                }
+                Query(timeStamp, symbol);
+                
+                
             }
             
             
