@@ -226,7 +226,10 @@ class Order implements Comparable<Order>{
                             break;
                         }else{
                             if(buy.getPrice() != sell.getPrice())
+                            if(sell.getPrice() > 0f)
                             buy.setPrice(sell.getPrice());
+                            else
+                            sell.setPrice(buy.getPrice());    
                             
                             matched.add(buy);
                             matched.add(sell);
