@@ -312,7 +312,6 @@ class Order implements Comparable<Order>{
                     int timeStamp = Integer.parseInt(removedZeroes);
                     String symbol = data[3];
                     float price = Float.parseFloat(data[6]);
-                    
                     OrderType orderType;
                             switch (data[4]) {
                                 case "M":
@@ -344,14 +343,15 @@ class Order implements Comparable<Order>{
                     
                     int quantity = Integer.parseInt(data[7]);
                     if(timeStamp >= Order.lastTimestamp && symbol.matches("[a-zA-Z]+") && orderType != null && !(orderType == 
-                        OrderType.M && price >= 0) && price >= 0 && side != null && quantity >= 1 &&
+                        OrderType.M && price > 0f) && price >= 0 && side != null && quantity >= 1 &&
                        quantity <= Math.pow(2, 63) - 1 && orderID >= 1 && orderID <= Math.pow(2, 63) - 1 && quantity >= 0){
                     if(data[0].equals("N")){
                         //Command N
                         if(findOrder(orderID) == -1){
                         orders.add(new Order(orderID, timeStamp, symbol, orderType, side, price, quantity));
                         responses.add(orderID + " - Accept");
-                        }else{ responses.add(data[1] + " - Reject - 303 - Invalid order details");}
+                        }else{
+                            responses.add(data[1] + " - Reject - 303 - Invalid order details");}
                     }else if (data[0].equals("A")){
                         //Command A
                         int orderIndex = findOrder(orderID);
