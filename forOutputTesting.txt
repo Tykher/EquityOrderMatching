@@ -1,34 +1,49 @@
-32 - Accept
-33 - Accept
-34 - Accept
-35 - Accept
-36 - Accept
-37 - Accept
-38 - Accept
-39 - Accept
-40 - Accept
-41 - Accept
-42 - Accept
-43 - Accept
-44 - Accept
-45 - Accept
-46 - Accept
-47 - Accept
-48 - Accept
-49 - Accept
-50 - Accept
-51 - Accept
-52 - Accept
-ANC|36,L,100,128.23|128.23,100,M,49
-ANC|42,L,50,128.23|128.23,50,M,49
-ASHL|44,L,70,996.20|996.20,70,M,34
-ASHL|45,L,20,996.20|996.20,20,M,34
-ASHL|47,L,50,996.20|996.20,50,M,34
-ASHL|47,L,140,996.20|996.20,140,L,38
-MTY|39,M,100,2282.26|2282.26,100,L,35
-MTY|39,M,50,2282.26|2282.26,50,L,41
-RIL|37,M,50,109.43|109.43,50,L,43
-RIL|50,M,50,109.43|109.43,50,L,43
-XYZ|40,L,30,104.63|104.63,30,M,48
-XYZ|40,L,50,104.63|104.63,50,M,51
-XYZ|46,L,40,0.00|0.00,40,M,51
+1 - Accept
+2 - Accept
+3 - Accept
+4 - Accept
+5 - Accept
+1 - AmendAccept
+6 - Accept
+7 - Accept
+8 - Accept
+9 - Accept
+4 - AmendAccept
+10 - Accept
+AB|1,L,100,105.53|105.53,100,L,5
+XYZ|4,L,50,323.43|323.43,50,L,9
+11 - Accept
+7 - AmendAccept
+12 - Accept
+13 - Accept
+2 - AmendAccept
+14 - Accept
+15 - Accept
+11 - AmendAccept
+16 - Accept
+17 - Accept
+18 - Accept
+AB|2,L,50,105.53|105.53,50,L,12
+AB|15,L,50,105.53|105.53,50,L,12
+BNY|6,L,40,305.53|305.53,40,L,14
+BNY|10,L,100,305.53|305.53,100,L,14
+RIL|7,L,50,213.43|213.43,50,L,16
+RIL|11,L,50,213.43|213.43,50,L,16
+XYZ|13,L,25,323.43|323.43,25,L,9
+XYZ|17,L,25,323.43|323.43,25,L,9
+19 - Accept
+20 - Accept
+21 - Accept
+16 - AmendAccept
+14 - AmendAccept
+23 - Accept
+25 - Accept
+27 - Accept
+19 - AmendAccept
+28 - Accept
+BNY|25,L,53,318.27|318.27,53,L,23
+BNY|27,L,37,318.27|318.27,37,L,23
+BNY|27,L,98,318.27|318.27,98,L,19
+RIL|28,L,20,213.43|213.43,20,L,16
+XYZ|20,L,40,330.26|330.26,40,L,18
+XYZ|20,L,10,330.26|330.26,10,L,21
