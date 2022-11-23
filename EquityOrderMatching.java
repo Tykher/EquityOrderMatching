@@ -61,9 +61,7 @@ class Order implements Comparable<Order>{
     @Override
     public int compareTo(Order o){
         if(this.symbol.equals(o.getSymbol())){
-            float thisValue = this.price * this.getQuantity();
-            float oValue = o.getPrice() * o.getQuantity();
-            float x = thisValue = oValue;
+            float x = this.price - o.getPrice();
             if(x > 0)
                 return 1;
             else if (x < 0)
@@ -183,8 +181,10 @@ class Order implements Comparable<Order>{
         orders.removeAll(toBuyMatch);
         orders.removeAll(toSellMatch);
         
+        System.out.println(toSellMatch.get(0).getOrderID());
+        
         Collections.sort(toBuyMatch, Collections.reverseOrder());
-        Collections.sort(toSellMatch, Collections.reverseOrder());
+        Collections.sort(toSellMatch);
         
         List<Order> matched = new ArrayList();
         
