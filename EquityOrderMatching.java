@@ -36,15 +36,17 @@ class Match implements Comparable<Match>{
     
      public String generate(){
         StringBuilder gen = new StringBuilder();
-        String formattedBuyPrice = String.format("%.02f", buy.getPrice());
-         String formattedSellPrice = String.format("%.02f", sell.getPrice());
         gen.append(symbol);
         gen.append("|");
-        if(buy != null)
+        if(buy != null){
+        String formattedBuyPrice = String.format("%.02f", buy.getPrice());
         gen.append(buy.getOrderID()+ "," + buy.getOrderType().name() + "," + buy.getQuantity() + "," + formattedBuyPrice);
+        }
         gen.append("|");
-        if(sell != null)
-        gen.append(sell.getPrice() + "," + sell.getQuantity() + "," + sell.getOrderType().name() + "," + formattedSellPrice);
+        if(sell != null){
+        String formattedSellPrice = String.format("%.02f", sell.getPrice());
+        gen.append(formattedSellPrice + "," + sell.getQuantity() + "," + sell.getOrderType().name() + "," + sell.getOrderID());
+        }
         return gen.toString();
         
     }
