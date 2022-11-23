@@ -195,13 +195,18 @@ class Order implements Comparable<Order>{
             for(Order sell : toSellMatch){
                 if(buy.getSymbol().equals(sell.getSymbol())){
                     if(((buy.getOrderType() == OrderType.L || buy.getOrderType() == OrderType.I) && 
-                       buy.getPrice() >= sell.getPrice()) || buy.orderType == OrderType.M) {                      
+                       buy.getPrice() >= sell.getPrice()) || ((buy.orderType == OrderType.M || sell.orderType == OrderType.M)
+                                                              && sell.orderType != buy.orderType)) {                      
                         Match match;
                         if(buy.getQuantity() > sell.getQuantity()){
                             Order order = new Order(buy);
                             order.setQuantity(sell.getQuantity());
                             buy.setQuantity(buy.getQuantity()-sell.getQuantity());
+                            if(sell.getPrice() != 0f){
                             order.setPrice(sell.getPrice());
+                            }else{
+                            sell.setPrice(order.getPrice());
+                            }
                             match = new Match(buy.getSymbol(), order, sell);
                             matched.add(sell);
                             toReturn.add(match);
@@ -210,7 +215,11 @@ class Order implements Comparable<Order>{
                             Order order = new Order(sell);
                             order.setQuantity(buy.getQuantity());
                             sell.setQuantity(sell.getQuantity() - buy.getQuantity());
+                            if(sell.getPrice() != 0f){
                             buy.setPrice(sell.getPrice());
+                            }else{
+                            order.setPrice(buy.getPrice());
+                            }                        
                             match = new Match(buy.getSymbol(), buy, order);
                             matched.add(buy);
                             toReturn.add(match);
